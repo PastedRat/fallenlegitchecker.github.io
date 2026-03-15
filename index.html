@@ -178,6 +178,11 @@
           Reports against player (optional)
           <input id="reports" type="number" min="0" placeholder="optional" />
         </label>
+
+        <label>
+          Accusation posts / clips seen (optional)
+          <input id="accusations" type="number" min="0" placeholder="optional" />
+        </label>
       </div>
 
       <div class="row">
@@ -188,6 +193,10 @@
         <label class="switch">
           <input id="flying" type="checkbox" />
           Ever seen flying / impossible movement
+        </label>
+        <label class="switch">
+          <input id="accused" type="checkbox" />
+          Was accused by many players
         </label>
         <button type="submit">Check legit %</button>
       </div>
@@ -225,6 +234,7 @@
       const server = document.getElementById('server').value.trim().toLowerCase();
       const vip = document.getElementById('vip').checked;
       const flying = document.getElementById('flying').checked;
+      const accused = document.getElementById('accused').checked;
 
       const years = num('years') ?? 0;
       const months = num('months') ?? 0;
@@ -237,6 +247,7 @@
       const friends = num('friends');
       const triples = num('triples');
       const reports = num('reports');
+      const accusations = num('accusations');
 
       breakdownEl.innerHTML = '';
 
@@ -330,6 +341,28 @@
         } else if (reports >= 5) {
           score -= 10;
           addNote(breakdownEl, 'Several player reports: -10% legit');
+        }
+      }
+
+      if (accused) {
+        score -= 15;
+        addNote(breakdownEl, 'Widely accused by players: -15% legit');
+      }
+
+      if (accusations !== null) {
+        if (accusations >= 8) {
+          score -= 20;
+          addNote(breakdownEl, 'Many accusation clips/posts found: -20% legit');
+        } else if (accusations >= 3) {
+          score -= 10;
+          addNote(breakdownEl, 'Some accusation clips/posts found: -10% legit');
+        }
+      }
+
+      if (hours !== null && triples !== null) {
+        if (hours >= 700 && triples <= 30) {
+          score += 5;
+          addNote(breakdownEl, '700+ hours with controlled triple count: +5% legit');
         }
       }
 
