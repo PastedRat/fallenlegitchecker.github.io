@@ -120,7 +120,7 @@
 <body>
   <main class="card">
     <h1>Fallen Survival Legit Check</h1>
-    <p class="sub">Type player info and it calculates a quick legit % based on your rules.</p>
+    <p class="sub">Type player info and run an ultra legit calculation with extra suspicious checks.</p>
 
     <form id="checker">
       <div class="grid">
@@ -168,12 +168,26 @@
           Friends count (optional)
           <input id="friends" type="number" min="0" placeholder="optional" />
         </label>
+
+        <label>
+          Triple headshots seen (optional)
+          <input id="triples" type="number" min="0" placeholder="optional" />
+        </label>
+
+        <label>
+          Reports against player (optional)
+          <input id="reports" type="number" min="0" placeholder="optional" />
+        </label>
       </div>
 
       <div class="row">
         <label class="switch">
           <input id="vip" type="checkbox" />
           Has VIP
+        </label>
+        <label class="switch">
+          <input id="flying" type="checkbox" />
+          Ever seen flying / impossible movement
         </label>
         <button type="submit">Check legit %</button>
       </div>
@@ -210,6 +224,7 @@
       const username = document.getElementById('username').value.trim();
       const server = document.getElementById('server').value.trim().toLowerCase();
       const vip = document.getElementById('vip').checked;
+      const flying = document.getElementById('flying').checked;
 
       const years = num('years') ?? 0;
       const months = num('months') ?? 0;
@@ -220,6 +235,8 @@
       const kills = num('kills');
       const deaths = num('deaths');
       const friends = num('friends');
+      const triples = num('triples');
+      const reports = num('reports');
 
       breakdownEl.innerHTML = '';
 
@@ -233,6 +250,11 @@
         addNote(breakdownEl, 'Looks like 2 capitalized words + 4 digits: -30% legit');
       }
 
+      if (/[0-9]{6,}/.test(username)) {
+        score -= 10;
+        addNote(breakdownEl, 'Long number spam in username: -10% legit');
+      }
+
       if (vip) {
         score += 25;
         addNote(breakdownEl, 'VIP detected: +25% legit');
@@ -241,6 +263,11 @@
       if (server === '2x #5') {
         score -= 25;
         addNote(breakdownEl, 'Server is exactly "2x #5": -25% legit');
+      }
+
+      if (server.includes('2x') && server.includes('#')) {
+        score -= 5;
+        addNote(breakdownEl, 'Competitive multiplier server pattern: -5% legit');
       }
 
       if (totalDays < 30) {
@@ -257,6 +284,18 @@
           score -= 10;
           addNote(breakdownEl, 'Very high K/D with low hours: -10% legit');
         }
+        if (hours < 25 && kd > 8) {
+          score -= 20;
+          addNote(breakdownEl, 'Extreme K/D with very low hours: -20% legit');
+        }
+      }
+
+      if (hours !== null && kills !== null && hours > 0) {
+        const killsPerHour = kills / hours;
+        if (hours < 30 && killsPerHour > 10) {
+          score -= 15;
+          addNote(breakdownEl, 'Too many kills per hour for low-time account: -15% legit');
+        }
       }
 
       if (friends !== null) {
@@ -266,6 +305,31 @@
         } else if (friends > 40) {
           score += 5;
           addNote(breakdownEl, 'Healthy friends count: +5% legit');
+        }
+      }
+
+      if (flying) {
+        score -= 45;
+        addNote(breakdownEl, 'Seen flying/impossible movement: -45% legit');
+      }
+
+      if (triples !== null) {
+        if (triples >= 3 && (hours ?? 0) < 30) {
+          score -= 20;
+          addNote(breakdownEl, 'Many triple headshots with low hours: -20% legit');
+        } else if (triples >= 10) {
+          score -= 15;
+          addNote(breakdownEl, 'Very high triple headshot count: -15% legit');
+        }
+      }
+
+      if (reports !== null) {
+        if (reports >= 10) {
+          score -= 20;
+          addNote(breakdownEl, 'Lots of player reports: -20% legit');
+        } else if (reports >= 5) {
+          score -= 10;
+          addNote(breakdownEl, 'Several player reports: -10% legit');
         }
       }
 
